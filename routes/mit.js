@@ -83,9 +83,9 @@ module.exports = function(req, res) {
         update(gcal, 
                function(err) {
                    console.log('  update done');
-                   if (err) return cb(err);
-                   else list(gcal, cb);
+                   if (err) console.log('  error in update: ' + err);
                });
+        cb();
         break;
     case 'listSrc':
         listSrc(cb);
