@@ -1,7 +1,5 @@
 var util = require('util');
 var express  = require('express');
-
-var config = require('./config');
 var gcal = require('google-calendar');
 
 /*
@@ -25,9 +23,9 @@ app.listen(port);
 console.log('listening on port: ' + port);
 
 passport.use(new GoogleStrategy({
-    clientID: config.consumer_key,
-    clientSecret: config.consumer_secret,
-    callbackURL: config.callbackURL,
+    clientID: process.env.CSCRAPE_CLIENT_ID,
+    clientSecret: process.env.CSCRAPE_CLIENT_SECRET,
+    callbackURL: process.env.CSCRAPE_REDIRECT_URI,
     scope: ['openid', 'email', 'https://www.googleapis.com/auth/calendar'] 
   },
   function(accessToken, refreshToken, profile, done) {
