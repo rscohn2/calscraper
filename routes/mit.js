@@ -23,6 +23,9 @@ var waitCalEmpty = function(gcal, cb) {
         if (data.items.length == 0) {
             return cb();
         }
+        wait--;
+        if (wait == 0)
+            return cb('error deleting');
         console.log('  scheduling another wait');
         setTimeout(function() {waitCalEmpty(gcal, cb);}, 10000);
     });
@@ -30,6 +33,7 @@ var waitCalEmpty = function(gcal, cb) {
 
 var reset = function(gcal,cb) {
     console.log('Reset');
+    wait = 2;
     gcal.events.list(calendarId, {}, function(err, data) {
         console.log('  deleting items: ' + data.items.length);
         // Should be possible to do in parallel, but node gets an error and stops
