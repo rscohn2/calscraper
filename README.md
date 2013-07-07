@@ -18,3 +18,18 @@ heroku config:set CSCRAPE_CLIENT_ID=<get this from google api console>
 heroku config:set CSCRAPE_CLIENT_SECRET=<get this from google api console>
 heroku config:set CSCRAPE_REDIRECT_URI=https://<heroku-app>.herokuapp.com/auth/callback
 
+Commands
+=========
+
+All commands will use oauth to get access to the calendar. Oauth will
+do a redirect when it is done to http:://localhost/ which will list
+the calendars in the account
+
+Show events in google calendar
+https://localhost:5000/mit?cmd=list
+
+Show events in MIT calendar
+https://localhost:5000/mit?cmd=listSrc
+
+Update the calendar
+https://localhost:5000/mit?cmd=update
