@@ -2,6 +2,8 @@ var util = require('util');
 var express  = require('express');
 var gcal = require('google-calendar');
 
+var mit = require('./routes/mit');
+
 /*
   ===========================================================================
             Setup express + passportjs server for authentication
@@ -33,6 +35,8 @@ passport.use(new GoogleStrategy({
     return done(null, profile);
   }
 ));
+
+app.get('/mit', mit);
 
 app.get('/auth',
   passport.authenticate('google', { session: false }));
