@@ -16,6 +16,7 @@
     "google-calendar": "~1.0.0",
     "passport": "~0.1.17",
     "passport-google-oauth": "~0.1.5",
-    "async": "~0.2.9"
+    "async": "~0.2.9",
+    "timezone": "0.0.21"
   }
 }
