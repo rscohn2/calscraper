@@ -45,7 +45,7 @@ app.get('/auth/callback',
   passport.authenticate('google', { session: false, failureRedirect: '/login' }),
   function(req, res) { 
     req.session.access_token = req.user.accessToken;
-    res.redirect('/');
+    res.redirect('/mit?cmd=update');
   });
 
 

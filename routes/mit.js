@@ -5,22 +5,42 @@ var calendarId = 'ncqr7uo4nbkbd10qsmaj4v9gg8@group.calendar.google.com';
 
 var fetchMIT = require('../lib/fetchMIT');
 
-var list = function(gcal,cb) {
-    gcal.events.list(calendarId, {}, cb);
-};
-
 var listSrc = function(cb) {
     fetchMIT(function(data) {
         cb(null, data);
     })
 };
 
-var waitCalEmpty = function(gcal, cb) {
+var eventListPage = function(gcal, events, nextPage, cb) {
+    gcal.events.list(calendarId, {pageToken: nextPage}, function(err, data) {
+        if (err) return cb(err, events);
+        events = events.concat(data.items);
+        if (data.nextPageToken) {
+            eventListPage(gcal, events, data.nextPageToken, cb);
+        } else {
+            cb(err, events);
+        }
+    });
+}
+    
+var eventList = function(gcal, cb) {
     gcal.events.list(calendarId, {}, function(err, data) {
+        if (err) return cb(err);
+        var events = data.items;
+        if (data.nextPageToken) {
+            eventListPage(gcal, events, data.nextPageToken, cb);
+        } else {
+            cb(err, events);
+        }
+    });
+}
+
+var waitCalEmpty = function(gcal, cb) {
+    eventList(gcal, function(err, events) {
         if (err)
             cb(err);
-        console.log('  items left: ' + data.items.length);
-        if (data.items.length == 0) {
+        console.log('  items left: ' + events.length);
+        if (events.length == 0) {
             return cb();
         }
         wait--;
@@ -34,10 +54,10 @@ var waitCalEmpty = function(gcal, cb) {
 var reset = function(gcal,cb) {
     console.log('Reset');
     wait = 2;
-    gcal.events.list(calendarId, {}, function(err, data) {
-        console.log('  deleting items: ' + data.items.length);
+    eventList(gcal, function(err, events) {
+        console.log('  deleting items: ' + events.length);
         // Should be possible to do in parallel, but node gets an error and stops
-        async.eachSeries(data.items, 
+        async.eachSeries(events, 
                          function(item, cb) {
                              gcal.events.delete(calendarId, item.id, cb);
                          }, 
@@ -96,7 +116,7 @@ module.exports = function(req, res) {
         break;
     case 'list':
     default:
-        list(gcal, cb);
+        eventList(gcal, cb);
         break;
     }
 }
