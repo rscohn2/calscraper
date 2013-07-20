@@ -70,22 +70,45 @@ var reset = function(gcal,cb) {
     });
 }
 
+var check = function(gcal,cb) {
+    console.log('  check');
+    async.waterfall([
+        function(cb) {eventList(gcal, cb);},
+        function(events, cb) { 
+            console.log('  # items: ' + events.length);
+            cb();
+        }], cb);
+};
+
 var update = function(gcal, cb) {
     console.log('Update');
-    reset(gcal, function(err) {
-        console.log('  reset done');
-        if (err) return cb(err);
-        fetchMIT(function(data) {
-            console.log('  fetch done');
-            console.log('  inserting events: ' + data.events.length);
-            // Should be possible to do in parallel, but node gets an error and stops
-            async.eachSeries(data.events,
-                       function(event, cb) {
-                           gcal.events.insert(calendarId, event, cb);
-                       },
-                       cb);
-        });
+    async.series([
+        function(cb) { reset(gcal, cb); },
+        function(cb) { populate(gcal, cb);},
+        function(cb) { check(gcal, cb);},
+    ], function(err) { 
+        if (err) console.log('Error during update: ' + err);
+        cb(err);
     });
+}
+
+var populate = function(gcal, cb) {
+    console.log('  populate');
+    var insert = function(data, cb) {
+        console.log('  inserting events: ' + data.events.length);
+        // Should be possible to do in parallel, but node gets an error and stops
+        async.eachSeries(data.events,
+                         function(event, cb) {
+                             //console.log('INSERTING: ' + JSON.stringify(event));
+                             gcal.events.insert(calendarId, event, cb);
+                         },
+                         cb);
+    };
+        
+    async.waterfall([
+        fetchMIT,
+        insert
+    ], cb);
 }
         
 module.exports = function(req, res) {    
