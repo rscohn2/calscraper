@@ -13,10 +13,10 @@
     "express": "3.2.6",
     "request": "~2.22.0",
     "mustache": "~0.7.2",
-    "google-calendar": "~1.0.0",
     "passport": "~0.1.17",
     "passport-google-oauth": "~0.1.5",
     "async": "~0.2.9",
-    "timezone": "0.0.21"
+    "timezone": "0.0.21",
+    "google-calendar": "git://github.com/berryboy/google-calendar.git#f567c4bc492c66ba3c4485ba84f32d118967c1e8"
   }
 }
