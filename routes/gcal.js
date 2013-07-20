@@ -1,5 +1,6 @@
 var async = require('async');
 var googleCalendar = require('google-calendar');
+var days = 8;
 
 var calendars = {
     mit: {
@@ -118,7 +119,7 @@ var populate = function(calendar, gcal, cb) {
     };
         
     async.waterfall([
-        calendar.fetch,
+        function(cb) {calendar.fetch(days, cb);},
         insert
     ], cb);
 }
