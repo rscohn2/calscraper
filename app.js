@@ -1,8 +1,6 @@
 var util = require('util');
 var express  = require('express');
-var gcal = require('google-calendar');
-
-var mit = require('./routes/mit');
+var gcal = require('./routes/mit');
 
 /*
   ===========================================================================
@@ -36,8 +34,6 @@ passport.use(new GoogleStrategy({
   }
 ));
 
-app.get('/mit', mit);
-
 app.get('/auth',
   passport.authenticate('google', { session: false }));
 
@@ -45,8 +41,8 @@ app.get('/auth/callback',
   passport.authenticate('google', { session: false, failureRedirect: '/login' }),
   function(req, res) { 
     req.session.access_token = req.user.accessToken;
-      res.redirect('/mit?cmd=update');
-      //res.redirect('/mit?cmd=listSrc');
+      res.redirect('/gcal?cal=test&cmd=update');
+      //res.redirect('/gcal?cal=test&cmd=listSrc');
   });
 
 
@@ -56,48 +52,5 @@ app.get('/auth/callback',
   ===========================================================================
 */
 
-app.all('/', function(req, res){
-  
-  if(!req.session.access_token) return res.redirect('/auth');
-  
-  //Create an instance from accessToken
-  var accessToken = req.session.access_token;
-  var google_calendar = new gcal.GoogleCalendar(accessToken);
-  
-  google_calendar.calendarList.list(function(err, data) {
-    if(err) return res.send(500,err);
-    return res.send(data);
-  });
-});
+app.all('/gcal', gcal);
 
-app.all('/:calendarId', function(req, res){
-  
-  if(!req.session.access_token) return res.redirect('/auth');
-  
-  //Create an instance from accessToken
-  var accessToken     = req.session.access_token;
-  var google_calendar = new gcal.GoogleCalendar(accessToken);
-  var calendarId      = req.params.calendarId;
-  
-  google_calendar.events.list(calendarId, function(err, data) {
-    if(err) return res.send(500,err);
-    return res.send(data);
-  });
-});
-
-
-app.all('/:calendarId/:eventId', function(req, res){
-  
-  if(!req.session.access_token) return res.redirect('/auth');
-  
-  //Create an instance from accessToken
-  var accessToken     = req.session.access_token;
-  var google_calendar = new gcal.GoogleCalendar(accessToken);
-  var calendarId      = req.params.calendarId;
-  var eventId         = req.params.eventId;
-  
-  google_calendar.events.get(calendarId, eventId, function(err, data) {
-    if(err) return res.send(500,err);
-    return res.send(data);
-  });
-});
