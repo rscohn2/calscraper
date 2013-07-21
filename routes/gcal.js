@@ -4,10 +4,17 @@ var days = 8;
 
 var calendars = {
     mit: {
+        name: 'mit',
         id: 'ncqr7uo4nbkbd10qsmaj4v9gg8@group.calendar.google.com',
         fetch: require('../lib/fetchMIT')
     },
+    nec: {
+        name: 'nec',
+        id: 'b6athi421u78p2tmrdvluc3mn0@group.calendar.google.com',
+        fetch: require('../lib/fetchNEC')
+    },
     test: {
+        name: 'test',
         id: 'o8pt90810godrvn91e81u0568g@group.calendar.google.com',
         fetch: require('../lib/fetchMIT')
     }        
@@ -94,30 +101,25 @@ var check = function(calendar, gcal,cb) {
 };
 
 var update = function(calendar, gcal, cb) {
-    console.log('Update');
+    console.log('Update: ' + calendar.name);
     async.series([
         function(cb) { reset(calendar, gcal, cb); },
         function(cb) { populate(calendar, gcal, cb);},
         function(cb) { check(calendar, gcal, cb);},
-    ], function(err) { 
-        if (err) console.log('Error during update: ' + err);
-        cb(err);
-    });
+    ], cb);
 }
 
 var populate = function(calendar, gcal, cb) {
     console.log('  populate');
     var insert = function(data, cb) {
-        console.log('  inserting events: ' + data.events.length);
         // Should be possible to do in parallel, but node gets an error and stops
+        console.log('  inserting: ' + data.events.length);
         async.eachSeries(data.events,
                          function(event, cb) {
-                             //console.log('INSERTING: ' + JSON.stringify(event));
                              gcal.events.insert(calendar.id, event, cb);
                          },
                          cb);
     };
-        
     async.waterfall([
         function(cb) {calendar.fetch(days, cb);},
         insert
@@ -125,33 +127,39 @@ var populate = function(calendar, gcal, cb) {
 }
         
 module.exports = function(req, res) {    
-    if(!req.session.access_token) return res.redirect('/auth');
-
-    var gcal = new googleCalendar.GoogleCalendar(req.session.access_token);
     if (!req.query.cal)
         return calError(res);
     var calendar = calendars[req.query.cal];
     if (!calendar)
         return calError(res);
+
     var cb = function(err, data) {
         if (err) return res.send(500,err);
         return res.send(data || 'OK');
     }
+
+    switch(req.query.cmd) {
+    case 'listSrc':
+        calendar.fetch(days, cb);
+        return;
+    }
+
+    if(!req.session.access_token) return res.redirect('/auth');
+
+    var gcal = new googleCalendar.GoogleCalendar(req.session.access_token);
 
     switch (req.query.cmd) {
     case 'reset':
         reset(calendar, gcal, cb);
         break;
     case 'update':
-        update(calendar, gcal, 
-               function(err) {
-                   console.log('  update done');
-                   if (err) console.log('  error in update: ' + err);
-               });
+        var c = [calendars.nec ,calendars.mit];
+        async.mapSeries(c, function(calendar, cb) {
+            update(calendar, gcal, cb);
+        }, function(err) {
+            if (err) console.log('  error in update: ' + JSON.stringify(err));
+        });
         cb();
-        break;
-    case 'listSrc':
-        calendar.fetch(cb);
         break;
     case 'list':
     default:

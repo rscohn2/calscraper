@@ -41,7 +41,8 @@ app.get('/auth/callback',
   passport.authenticate('google', { session: false, failureRedirect: '/login' }),
   function(req, res) { 
     req.session.access_token = req.user.accessToken;
-      res.redirect('/gcal?cal=mit&cmd=update');
+      res.redirect('/gcal?cal=nec&cmd=update');
+      //res.redirect('/gcal?cal=nec&cmd=listSrc');
       //res.redirect('/gcal?cal=test&cmd=update');
       //res.redirect('/gcal?cal=test&cmd=listSrc');
   });
